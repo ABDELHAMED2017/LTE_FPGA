@@ -53,6 +53,8 @@ dataBits = randi([0,1], bits, 1);
 %Modulate Bits
 modulatedData = step(H_psk_mod,dataBits);
 
+%padd with zeros at the end
+
 scatter(real(modulatedData),imag(modulatedData))
 grid on;
 hold on;
@@ -75,5 +77,12 @@ recivedSignal = step(rctFiltRX,channelData);
 
 %Demodulate
 bitsDemod = step(H_psk_demod,recivedSignal);
+
+%OTA BER
+
+%Channel Decoding
+
+%Coded BER
+
 
 %% Results
