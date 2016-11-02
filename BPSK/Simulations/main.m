@@ -7,7 +7,7 @@ close all; %close all figures
 setup.plots   = 1;  %If 1, plot data. In this case, ntrials will be 1.
 setup.ntrials = 10;  %Montecarlo trials in simulation
 
-TX.parameters.bits = 50;   %Bits per trial
+TX.parameters.bits = 100;   %Bits per trial
 TX.parameters.SNR  = 20;   %SNR to try
 TX.RRC.sampsPerSym = 8;    %Upsampling factor
 TX.RRC.beta        = 0.5;  %Rollof factor
@@ -59,9 +59,12 @@ TX.data.codedBits   = TX.data.uncodedBits;                  %Error Correction Co
 TX.data.modulated   = step(H_psk_mod,TX.data.uncodedBits);  %Modulate Bits
 %Padd with zeros at the end
 TX.data.filtered    = step(rctFilt,TX.data.modulated);      %RRC
+H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));
 
 % RECIEVER
 RX.data.channel     = step(H_awgn,TX.data.filtered);        %AWGN
+z = RX.data.channel - TX.data.filtered; %sanity check on snr
+snr = snr(TX.data.filtered , z);
 RX.data.RRCFiltered = step(rctFiltRX,RX.data.channel);      %RRC
 RX.data.demod       = step(H_psk_demod,RX.data.RRCFiltered);%Demodulate
 %OTA BER
@@ -87,4 +90,14 @@ if setup.plots == 1
     grid on;
     hold on;
     stem(TX.data.timeVectorB,(TX.data.modulated));
+    figure(3)
+    [pxx,f] = pwelch(TX.data.filtered,[],[],[],TX.parameters.Fs,'centered','power');
+    plot(f,10*log10(pxx));
+    xlabel('Frequency (Hz)')
+    ylabel('Magnitude (dB)')
+    grid on;
+    hold on;
+    [pxx,f] = pwelch(RX.data.channel,[],[],[],TX.parameters.Fs,'centered','power');
+    plot(f,10*log10(pxx));
+    legend('TX data', 'RX data');
 end
