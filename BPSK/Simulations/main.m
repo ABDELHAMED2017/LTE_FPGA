@@ -8,11 +8,12 @@ setup.plots   = 1;   %If 1, plot data. In this case, ntrials will be 1.
 setup.ntrials = 10;  %Montecarlo trials in simulation
 
 TX.parameters.bits = 50;   %Bits per trial
-TX.parameters.SNR  = 50;   %SNR to try
+TX.parameters.SNR  = 20;   %SNR to try
 TX.RRC.sampsPerSym = 16;   %Upsampling factor
 TX.RRC.beta        = 0.2;  %Rollof factor
 TX.RRC.Nsym        = 8;    %Filter span in symbol durations
 TX.parameters.Fs   = 40e6; %Sampling Rate (Hz)
+
 TX.parameters.ts   = TX.parameters.Fs^-1; %Time period (s)
 TX.parameters.sym_period = TX.parameters.ts * TX.RRC.sampsPerSym;
 
@@ -70,8 +71,8 @@ RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));     %Update signal pow
 
 % RECIEVER
 RX.data.channel     = step(RX.H_awgn,TX.data.filtered);        %AWGN
-RX.z = RX.data.channel - TX.data.filtered;                     %Calculate the noise signal
-RX.snr = snr(TX.data.filtered , RX.z);                         %Sanity check on snr
+RX.z                = RX.data.channel - TX.data.filtered;      %Calculate the noise signal
+RX.snr              = snr(TX.data.filtered , RX.z);            %Sanity check on snr
 RX.data.RRCFiltered = step(RX.rctFilt,RX.data.channel);        %RRC
 RX.data.demod       = step(RX.H_psk_demod,RX.data.RRCFiltered);%Demodulate
 %OTA BER
@@ -98,7 +99,8 @@ if setup.plots == 1
     xlabel('time (s)'); ylabel('Amplitude');
     grid on; hold on;
     stem(TX.data.timeVectorB,real(TX.data.modulated));
-    legend('Pulseshaped Signal','Modulated data');
+    plot(TX.data.timeVector,real(RX.data.channel),'--');
+    legend('Pulseshaped Signal','Modulated data','RX Signal');
     figure(3)
     [pxx,f] = pwelch(TX.data.filtered,[],[],[],TX.parameters.Fs,'centered','power');
     plot(f/10^6,10*log10(pxx));
