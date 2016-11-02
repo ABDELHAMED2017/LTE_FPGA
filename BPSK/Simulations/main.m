@@ -49,11 +49,11 @@ end
 %% Simulation
 
 % TRANSMITTER
-TX.dataBits      = randi([0,1], bits, 1);    %Create Random Data
-%Error Correction Code
-TX.modulatedData = step(H_psk_mod,dataBits); %Modulate Bits
-%padd with zeros at the end
-TX.filteredData  = rctFilt(modulatedData);   %RRC
+TX.dataBits      = randi([0,1], TXparameters.bits , 1); %Create Random Data
+                                                        %Error Correction Code
+TX.modulatedData = step(H_psk_mod,TX.dataBits);         %Modulate Bits
+                                                        %Padd with zeros at the end
+TX.filteredData  = rctFilt(TX.modulatedData);           %RRC
 
 % RECIEVER
 RX.channelData   = step(H_awgn,TX.filteredData);       %AWGN
