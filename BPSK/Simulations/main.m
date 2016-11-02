@@ -4,14 +4,14 @@ clear;     %clear workspace
 clc;       %clear console
 close all; %close all figures
 %% Setup
-setup.plots   = 1;  %If 1, plot data. In this case, ntrials will be 1.
+setup.plots   = 1;   %If 1, plot data. In this case, ntrials will be 1.
 setup.ntrials = 10;  %Montecarlo trials in simulation
 
 TX.parameters.bits = 50;   %Bits per trial
-TX.parameters.SNR  = 20;   %SNR to try
-TX.RRC.sampsPerSym = 8;    %Upsampling factor
+TX.parameters.SNR  = 50;   %SNR to try
+TX.RRC.sampsPerSym = 16;   %Upsampling factor
 TX.RRC.beta        = 0.2;  %Rollof factor
-TX.RRC.Nsym        = 6;    %Filter span in symbol durations
+TX.RRC.Nsym        = 8;    %Filter span in symbol durations
 TX.parameters.Fs   = 40e6; %Sampling Rate (Hz)
 TX.parameters.ts   = TX.parameters.Fs^-1; %Time period (s)
 TX.parameters.sym_period = TX.parameters.ts * TX.RRC.sampsPerSym;
@@ -58,21 +58,21 @@ TX.RRC.delay = length(TX.RRC.b.Numerator);
 %% Simulation
 
 % TRANSMITTER
-TX.data.uncodedBits = randi([0,1], TX.parameters.bits , 1); %Create Random Data
-TX.data.codedBits   = TX.data.uncodedBits;                  %Error Correction Code
-TX.data.modulated   = step(TX.H_psk_mod,TX.data.uncodedBits);  %Modulate Bits
+TX.data.uncodedBits = randi([0,1], TX.parameters.bits , 1);   %Create Random Data
+TX.data.codedBits   = TX.data.uncodedBits;                    %Error Correction Code
+TX.data.modulated   = step(TX.H_psk_mod,TX.data.uncodedBits); %Modulate Bits
 TX.data.modulatedpad   = [TX.data.modulated; ...
     zeros(TX.RRC.Nsym,1)];%Padd with zeros at the end
-TX.data.filtered    = step(TX.rctFilt,TX.data.modulatedpad);      %RRC
+TX.data.filtered    = step(TX.rctFilt,TX.data.modulatedpad);  %RRC
 TX.data.filtered    = TX.data.filtered(...
     TX.RRC.Nsym/2*TX.RRC.sampsPerSym+1:end-TX.RRC.Nsym/2*TX.RRC.sampsPerSym);
-RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));      %Update signal power
+RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));     %Update signal power
 
 % RECIEVER
-RX.data.channel     = step(RX.H_awgn,TX.data.filtered); %AWGN
-RX.z = RX.data.channel - TX.data.filtered; %Calculate the noise
-RX.snr = snr(TX.data.filtered , RX.z);        %Sanity check on snr
-RX.data.RRCFiltered = step(RX.rctFilt,RX.data.channel);      %RRC
+RX.data.channel     = step(RX.H_awgn,TX.data.filtered);        %AWGN
+RX.z = RX.data.channel - TX.data.filtered;                     %Calculate the noise signal
+RX.snr = snr(TX.data.filtered , RX.z);                         %Sanity check on snr
+RX.data.RRCFiltered = step(RX.rctFilt,RX.data.channel);        %RRC
 RX.data.demod       = step(RX.H_psk_demod,RX.data.RRCFiltered);%Demodulate
 %OTA BER
 %Channel Decoding
@@ -96,17 +96,14 @@ if setup.plots == 1
     figure(2)
     plot(TX.data.timeVector,real(TX.data.filtered));
     xlabel('time (s)'); ylabel('Amplitude');
-    grid on;
-    hold on;
+    grid on; hold on;
     stem(TX.data.timeVectorB,real(TX.data.modulated));
-    legend('Modulated data', 'Pulseshaped Signal');
+    legend('Pulseshaped Signal','Modulated data');
     figure(3)
     [pxx,f] = pwelch(TX.data.filtered,[],[],[],TX.parameters.Fs,'centered','power');
     plot(f/10^6,10*log10(pxx));
-    xlabel('Frequency (MHz)')
-    ylabel('Magnitude (dB)')
-    grid on;
-    hold on;
+    xlabel('Frequency (MHz)');ylabel('Magnitude (dB)')
+    grid on;hold on;
     [pxx,f] = pwelch(RX.data.channel,[],[],[],TX.parameters.Fs,'centered','power');
     plot(f/10^6,10*log10(pxx));
 end
