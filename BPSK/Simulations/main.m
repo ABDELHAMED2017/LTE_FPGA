@@ -74,11 +74,9 @@ RX.data.demod       = step(H_psk_demod,RX.data.RRCFiltered);%Demodulate
 if setup.plots == 1
     figure(1)
     scatter(real(RX.data.channel) ,imag(RX.data.channel));
-    axis([-1 1 -1 1])
-    grid on;
-    hold on;
+    axis([-1 1 -1 1]);grid on; hold on;
     scatter(real(TX.data.filtered ),imag(TX.data.filtered ));
-    scatter(real(TX.data.modulated),imag(TX.data.modulated));
+    scatter(real(TX.data.modulated),imag(TX.data.modulated),'x','LineWidth',3);
     legend('Recieved Data','TX after pulseshaping','Modulated TX symbols');
     str = sprintf('SNR of %d, Constellation Plot',TX.parameters.SNR );
     title(str);
