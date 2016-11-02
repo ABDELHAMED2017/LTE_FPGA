@@ -6,7 +6,8 @@ clc;     %clear console
 setup.plots   = 1;  %If 1, plot data. In this case, ntrials will be 1.
 setup.ntrials = 1000;  %Montecarlo trials in simulation
 
-TXparameters.bits          = 1000;
+TXparameters.bits          = 50;
+TXparameters.SNR           = 20;
 RRCparameters.sampsPerSym  = 8;   %Upsampling factor
 RRCparameters.beta         = 0.5; %Rollof factor
 RRCparameters.Nsym         = 6;   %Filter span in symbol durations
@@ -34,7 +35,7 @@ rctFiltRX = comm.RaisedCosineReceiveFilter(...
     'InputSamplesPerSymbol',  RRCparameters.sampsPerSym);
 
 H_awgn = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)',...
-    'SNR',15,...
+    'SNR',TXparameters.SNR,...
     'BitsPerSymbol',1,...
     'SignalPower',1,...
     'SamplesPerSymbol',RRCparameters.sampsPerSym);
@@ -43,17 +44,17 @@ if (gpuDeviceCount) %Check system to see if there is GPU;
     setup.GPU = 1;
 end
 if setup.plots == 1
-    setup.ntrials = 1  %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
+    setup.ntrials = 1; %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
 end
 
 %% Simulation
 
 % TRANSMITTER
 TX.dataBits      = randi([0,1], TXparameters.bits , 1); %Create Random Data
-                                                        %Error Correction Code
+%Error Correction Code
 TX.modulatedData = step(H_psk_mod,TX.dataBits);         %Modulate Bits
-                                                        %Padd with zeros at the end
-TX.filteredData  = rctFilt(TX.modulatedData);           %RRC
+%Padd with zeros at the end
+TX.filteredData  = step(rctFilt,TX.modulatedData);      %RRC
 
 % RECIEVER
 RX.channelData   = step(H_awgn,TX.filteredData);       %AWGN
@@ -67,8 +68,14 @@ RX.bitsDemod     = step(H_psk_demod,RX.recivedSignal); %Demodulate
 
 %PLOTS from 1 trial
 if setup.plots == 1
-    scatter(real(modulatedData),imag(modulatedData))
+    figure(1)
+    scatter(real(RX.channelData) ,imag(RX.channelData));
+    axis([-1 1 -1 1])
     grid on;
     hold on;
-    scatter(real(channelData),imag(channelData));
+    scatter(real(TX.modulatedData),imag(TX.modulatedData));
+    scatter(real(TX.filteredData),imag(TX.filteredData));
+    legend('Recieved Data','TX after pulseshaping','Modulated TX symbols');
+    str = sprintf('SNR of %d, Constellation Plot',TXparameters.SNR );
+    title(str);
 end
