@@ -1,6 +1,7 @@
 %% Main file of BPSK Simulator
 % From here, we will script everything. 
-
+clear;   %clear workspace
+clc;     %clear console
 %% Setup
 plots = 0;  %If 1, plot data. In this case, ntrials will be 1. 
 
