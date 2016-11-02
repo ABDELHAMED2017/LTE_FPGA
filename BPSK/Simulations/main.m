@@ -1,7 +1,8 @@
 %% Main file of BPSK Simulator
 % From here, we will script everything.
-clear;   %clear workspace
-clc;     %clear console
+clear;     %clear workspace
+clc;       %clear console
+close all; %close all figures
 %% Setup
 setup.plots   = 1;  %If 1, plot data. In this case, ntrials will be 1.
 setup.ntrials = 1000;  %Montecarlo trials in simulation
