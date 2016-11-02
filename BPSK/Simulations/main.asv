@@ -1,18 +1,19 @@
 %% Main file of BPSK Simulator
 % From here, we will script everything.
-clear;   %clear workspace
-clc;     %clear console
+clear;     %clear workspace
+clc;       %clear console
+close all; %close all figures
 %% Setup
 setup.plots   = 1;  %If 1, plot data. In this case, ntrials will be 1.
 setup.ntrials = 1000;  %Montecarlo trials in simulation
 
-TXparameters.bits          = 1000;
-sampsPerSym  = 8;   %Upsampling factor
-beta         = 0.5; %Rollof factor
-Nsym         = 6;   %Filter span in symbol durations
-
-TXparameters.Fs = 40e6; %Sampling Rate
-TXparameters.time_period = TXparameters.Fs^-1;
+TX.parameters.bits = 50;   %Bits per trial
+TX.parameters.SNR  = 20;   %SNR to try
+TX.RRC.sampsPerSym = 8;    %Upsampling factor
+TX.RRC.beta        = 0.5;  %Rollof factor
+TX.RRC.Nsym        = 6;    %Filter span in symbol durations
+TX.parameters.Fs   = 40e6; %Sampling Rate (Hz)
+TX.parameters.ts   = TX.parameters.Fs^-1; %Time period (s)
 
 H_psk_mod = comm.PSKModulator('ModulationOrder',2,...
     'PhaseOffset',pi);
@@ -23,21 +24,19 @@ H_psk_demod = comm.PSKDemodulator ('ModulationOrder',2,...
 
 rctFilt = comm.RaisedCosineTransmitFilter(...
     'Shape',                  'Normal', ...
-    'RolloffFactor',          beta, ...
-    'FilterSpanInSymbols',    Nsym, ...
-    'OutputSamplesPerSymbol', sampsPerSym);
-% 
-% rctFiltRX = comm.RaisedCosineReceiveFilter(...
-%     'Shape',                  'Normal', ...
-%     'RolloffFactor',          RRCparameters.beta, ...
-%     'FilterSpanInSymbols',    RRCparameters.Nsym, ...
-%     'InputSamplesPerSymbol',  RRCparameters.sampsPerSym);
-% 
-% H_awgn = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)',...
-%     'SNR',15,...
-%     'BitsPerSymbol',1,...
-%     'SignalPower',1,...
-%     'SamplesPerSymbol',RRCparameters.sampsPerSym);
+    'RolloffFactor',          TX.RRC.beta, ...
+    'FilterSpanInSymbols',    TX.RRC.Nsym, ...
+    'OutputSamplesPerSymbol', TX.RRC.sampsPerSym);
+
+rctFiltRX = comm.RaisedCosineReceiveFilter(...
+    'Shape',                  'Normal', ...
+    'RolloffFactor',          TX.RRC.beta, ...
+    'FilterSpanInSymbols',    TX.RRC.Nsym, ...
+    'InputSamplesPerSymbol',  TX.RRC.sampsPerSym);
+
+H_awgn = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)',...
+    'SNR',TX.parameters.SNR,...
+    'SignalPower',1);
 
 if (gpuDeviceCount) %Check system to see if there is GPU;
     setup.GPU = 1;
@@ -46,14 +45,16 @@ if setup.plots == 1
     setup.ntrials = 1; %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
 end
 
+TX.data.sampleVector = 1:TX.parameters.bits;  %Sample vector for plots
+TX.data.timeVector   = TX.parameters.ts*TX.data.sampleVector; %Time vector for plots
 %% Simulation
 
 % TRANSMITTER
-TX.dataBits      = randi([0,1], TXparameters.bits , 1); %Create Random Data
-                                                        %Error Correction Code
-TX.modulatedData = step(H_psk_mod,TX.dataBits);         %Modulate Bits
-                                                        %Padd with zeros at the end
-TX.filteredData  = steprctFilt(TX.modulatedData);           %RRC
+TX.data.uncodedBits      = randi([0,1], TX.parameters.bits , 1); %Create Random Data
+%Error Correction Code
+TX.modulatedData = step(H_psk_mod,TX.data.uncodedBits);         %Modulate Bits
+%Padd with zeros at the end
+TX.filteredData  = step(rctFilt,TX.modulatedData);      %RRC
 
 % RECIEVER
 RX.channelData   = step(H_awgn,TX.filteredData);       %AWGN
@@ -67,9 +68,16 @@ RX.bitsDemod     = step(H_psk_demod,RX.recivedSignal); %Demodulate
 
 %PLOTS from 1 trial
 if setup.plots == 1
-    scatter(real(modulatedData),imag(modulatedData))
+    figure(1)
+    scatter(real(RX.channelData) ,imag(RX.channelData));
     axis([-1 1 -1 1])
     grid on;
     hold on;
-    scatter(real(channelData),imag(channelData));
+    scatter(real(TX.modulatedData),imag(TX.modulatedData));
+    scatter(real(TX.filteredData),imag(TX.filteredData));
+    legend('Recieved Data','TX after pulseshaping','Modulated TX symbols');
+    str = sprintf('SNR of %d, Constellation Plot',TXparameters.SNR );
+    title(str);
+    figure(2)
+    plot(real
 end
