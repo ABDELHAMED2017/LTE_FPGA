@@ -2,7 +2,9 @@
 % From here, we will script everything. 
 
 %% Setup
-bits = 100;
+plots = 0;  %If 1, plot data. In this case, ntrials will be 1. 
+
+bits = 1000;
 sampsPerSym  = 8; %upsampling factor
 beta = 0.5;       %rollof factor
 Nsym = 6;         %Filter span in symbol durations
@@ -42,6 +44,10 @@ H_awgn = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)',...
 %if GPU set to true
 GPU = 0;
 
+if plots == 1
+    ntrials = 1  %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
+end
+
 
 %% Simulation
 
@@ -63,7 +69,6 @@ hold on;
 filteredData = rctFilt(modulatedData);
 scatter(real(filteredData),imag(filteredData));
 
-%spectrumAnalyzer(filteredData)
 
 %AWGN 
 %There is a GPU version
