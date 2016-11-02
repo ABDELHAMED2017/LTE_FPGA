@@ -48,7 +48,7 @@ if setup.plots == 1
     setup.ntrials = 1; %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
 end
 
-TX.data.sampleVector = 0:(TX.parameters.bits*TX.RRC.sampsPerSym-1);  %Sample vector for plots
+TX.data.sampleVector = 0:(TX.parameters.bits*TX.RRC.sampsPerSym-1);%Sample vector for plots
 TX.data.timeVector   = TX.parameters.ts*TX.data.sampleVector;      %Time vectors for plots
 TX.data.timeVectorB  = downsample(TX.data.timeVector, TX.RRC.sampsPerSym);
 %% Simulation
@@ -58,13 +58,13 @@ TX.data.uncodedBits = randi([0,1], TX.parameters.bits , 1); %Create Random Data
 TX.data.codedBits   = TX.data.uncodedBits;                  %Error Correction Code
 TX.data.modulated   = step(TX.H_psk_mod,TX.data.uncodedBits);  %Modulate Bits
 %Padd with zeros at the end
-TX.data.filtered    = step(TX.rrtFilt,TX.data.modulated);      %RRC
-RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));      
+TX.data.filtered    = step(TX.rctFilt,TX.data.modulated);      %RRC
+RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));      %Update signal power
 
 % RECIEVER
-RX.data.channel     = step(RX.H_awgn,TX.data.filtered);        %AWGN
-z = RX.data.channel - TX.data.filtered; %sanity check on snr
-snr = snr(TX.data.filtered , z);
+RX.data.channel     = step(RX.H_awgn,TX.data.filtered); %AWGN
+RX.z = RX.data.channel - TX.data.filtered; %Calculate the noise
+RX.snr = snr(TX.data.filtered , RX.z);        %Sanity check on snr
 RX.data.RRCFiltered = step(RX.rctFilt,RX.data.channel);      %RRC
 RX.data.demod       = step(RX.H_psk_demod,RX.data.RRCFiltered);%Demodulate
 %OTA BER

@@ -10,10 +10,11 @@ setup.ntrials = 10;  %Montecarlo trials in simulation
 TX.parameters.bits = 50;   %Bits per trial
 TX.parameters.SNR  = 20;   %SNR to try
 TX.RRC.sampsPerSym = 8;    %Upsampling factor
-TX.RRC.beta        = 0.5;  %Rollof factor
+TX.RRC.beta        = 0.2;  %Rollof factor
 TX.RRC.Nsym        = 6;    %Filter span in symbol durations
 TX.parameters.Fs   = 40e6; %Sampling Rate (Hz)
 TX.parameters.ts   = TX.parameters.Fs^-1; %Time period (s)
+TX.parameters.sym_period = TX.parameters.ts * TX.RRC.sampsPerSym;
 
 TX.H_psk_mod = comm.PSKModulator('ModulationOrder',2,...
     'PhaseOffset',pi);
@@ -48,17 +49,23 @@ if setup.plots == 1
     setup.ntrials = 1; %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
 end
 
-TX.data.sampleVector = 0:(TX.parameters.bits*TX.RRC.sampsPerSym-1);  %Sample vector for plots
+TX.data.sampleVector = 0:(TX.parameters.bits*TX.RRC.sampsPerSym-1);%Sample vector for plots
 TX.data.timeVector   = TX.parameters.ts*TX.data.sampleVector;      %Time vectors for plots
 TX.data.timeVectorB  = downsample(TX.data.timeVector, TX.RRC.sampsPerSym);
+
+TX.RRC.delay = length(TX.RRC.b.Numerator);
+
 %% Simulation
 
 % TRANSMITTER
 TX.data.uncodedBits = randi([0,1], TX.parameters.bits , 1); %Create Random Data
 TX.data.codedBits   = TX.data.uncodedBits;                  %Error Correction Code
 TX.data.modulated   = step(TX.H_psk_mod,TX.data.uncodedBits);  %Modulate Bits
-%Padd with zeros at the end
-TX.data.filtered    = step(TX.rctFilt,TX.data.modulated);      %RRC
+TX.data.modulatedpad   = [TX.data.modulated; ...
+    zeros(TX.RRC.Nsym,1)];%Padd with zeros at the end
+TX.data.filtered    = step(TX.rctFilt,TX.data.modulatedpad);      %RRC
+TX.data.filtered    = TX.data.filtered(...
+    TX.RRC.Nsym/2*TX.RRC.sampsPerSym+1:end-TX.RRC.Nsym/2*TX.RRC.sampsPerSym);
 RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));      %Update signal power
 
 % RECIEVER
@@ -72,7 +79,10 @@ RX.data.demod       = step(RX.H_psk_demod,RX.data.RRCFiltered);%Demodulate
 %Coded BER
 
 %% Results
-
+%Throughput = code rate * (bits/sym) * (sym/sample) * (samples/second) 
+Results.throughput = 1 * 1 * (1/TX.RRC.sampsPerSym) * TX.parameters.Fs; %in bps
+Results.BW = obw(TX.data.filtered,TX.parameters.Fs);
+Results.spectralEff = Results.throughput / Results.BW %in bps/HZ
 %PLOTS from 1 trial
 if setup.plots == 1
     figure(1)
@@ -85,19 +95,18 @@ if setup.plots == 1
     title(str);
     figure(2)
     plot(TX.data.timeVector,real(TX.data.filtered));
-    xlabel('time (s)')
-    ylabel('Amplitude')
+    xlabel('time (s)'); ylabel('Amplitude');
     grid on;
     hold on;
     stem(TX.data.timeVectorB,real(TX.data.modulated));
+    legend('Modulated data', 'Pulseshaped Signal');
     figure(3)
     [pxx,f] = pwelch(TX.data.filtered,[],[],[],TX.parameters.Fs,'centered','power');
-    plot(f,10*log10(pxx));
-    xlabel('Frequency (Hz)')
+    plot(f/10^6,10*log10(pxx));
+    xlabel('Frequency (MHz)')
     ylabel('Magnitude (dB)')
     grid on;
     hold on;
     [pxx,f] = pwelch(RX.data.channel,[],[],[],TX.parameters.Fs,'centered','power');
-    plot(f,10*log10(pxx));
-    legend('TX data', 'RX data');
+    plot(f/10^6,10*log10(pxx));
 end
