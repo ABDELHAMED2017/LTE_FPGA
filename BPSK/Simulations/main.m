@@ -39,56 +39,36 @@ H_awgn = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)',...
     'SignalPower',1,...
     'SamplesPerSymbol',RRCparameters.sampsPerSym);
 
-
-%Check system to see if there is GPU;
-%if GPU set to true
-if (gpuDeviceCount)
+if (gpuDeviceCount) %Check system to see if there is GPU;
     setup.GPU = 1;
 end
 if setup.plots == 1
     setup.ntrials = 1  %Number of MonteCarlo Trials is set to 1 to avoid figure explosion.
 end
 
-
 %% Simulation
 
-%Transmitter
-dataBits = randi([0,1], bits, 1);
-
+% TRANSMITTER
+TX.dataBits      = randi([0,1], bits, 1);    %Create Random Data
 %Error Correction Code
-
-%Modulate Bits
-modulatedData = step(H_psk_mod,dataBits);
-
+TX.modulatedData = step(H_psk_mod,dataBits); %Modulate Bits
 %padd with zeros at the end
+TX.filteredData  = rctFilt(modulatedData);   %RRC
 
-scatter(real(modulatedData),imag(modulatedData))
-grid on;
-hold on;
-
-%RRC
-filteredData = rctFilt(modulatedData);
-scatter(real(filteredData),imag(filteredData));
-
-
-%AWGN
-%There is a GPU version
-channelData = step(H_awgn,filteredData);
-scatter(real(channelData),imag(channelData));
-
-%Receiver
-
-%RRC - Matched Filter
-recivedSignal = step(rctFiltRX,channelData);
-
-%Demodulate
-bitsDemod = step(H_psk_demod,recivedSignal);
-
+% RECIEVER
+RX.channelData   = step(H_awgn,TX.filteredData);       %AWGN
+RX.recivedSignal = step(rctFiltRX,RX.channelData);     %RRC
+RX.bitsDemod     = step(H_psk_demod,RX.recivedSignal); %Demodulate
 %OTA BER
-
 %Channel Decoding
-
 %Coded BER
 
-
 %% Results
+
+%PLOTS from 1 trial
+if setup.plots == 1
+    scatter(real(modulatedData),imag(modulatedData))
+    grid on;
+    hold on;
+    scatter(real(channelData),imag(channelData));
+end
