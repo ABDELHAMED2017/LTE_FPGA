@@ -1,0 +1,16 @@
+clear;
+clc;
+
+bitsPerTrial = 100;  %Bits to send per trial
+TXA = transmitter(2); %Create object for TX 
+AWGN = channel;       %Create object for channel
+RXA = receiver(TXA);
+snr = 0;
+
+%% Simulation
+uncodedBits = randi([0,1], bitsPerTrial, 1);   %Create Random Data
+toSend      = broadcast(TXA,uncodedBits);           %Do signal processing to prepare to send
+RawRecieved = transmit_over_channel(AWGN, snr, toSend);
+Demodulated = receive(RXA,RawRecieved);
+
+

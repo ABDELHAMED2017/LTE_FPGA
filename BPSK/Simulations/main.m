@@ -9,9 +9,9 @@ setup.ntrials = 10;  %Montecarlo trials in simulation
 
 TX.parameters.bits = 50;   %Bits per trial
 TX.parameters.SNR  = 20;   %SNR to try
-TX.RRC.sampsPerSym = 16;   %Upsampling factor
+TX.RRC.sampsPerSym = 8;    %Upsampling factor
 TX.RRC.beta        = 0.2;  %Rollof factor
-TX.RRC.Nsym        = 8;    %Filter span in symbol durations
+TX.RRC.Nsym        = 6;    %Filter span in symbol durations
 TX.parameters.Fs   = 40e6; %Sampling Rate (Hz)
 
 TX.parameters.ts   = TX.parameters.Fs^-1; %Time period (s)
@@ -62,25 +62,27 @@ TX.RRC.delay = length(TX.RRC.b.Numerator);
 TX.data.uncodedBits = randi([0,1], TX.parameters.bits , 1);   %Create Random Data
 TX.data.codedBits   = TX.data.uncodedBits;                    %Error Correction Code
 TX.data.modulated   = step(TX.H_psk_mod,TX.data.uncodedBits); %Modulate Bits
-TX.data.modulatedpad   = [TX.data.modulated; ...
+TX.data.modulatedPad   = [TX.data.modulated; ...
     zeros(TX.RRC.Nsym,1)];%Padd with zeros at the end
-TX.data.filtered    = step(TX.rctFilt,TX.data.modulatedpad);  %RRC
-TX.data.filtered    = TX.data.filtered(...
+TX.data.filteredPad = step(TX.rctFilt,TX.data.modulatedPad);  %RRC
+TX.data.filtered    = TX.data.filteredPad(...
     TX.RRC.Nsym/2*TX.RRC.sampsPerSym+1:end-TX.RRC.Nsym/2*TX.RRC.sampsPerSym);
 RX.H_awgn.SignalPower  = real(mean(TX.data.filtered.^2));     %Update signal power
 
 % RECIEVER
-RX.data.channel     = step(RX.H_awgn,TX.data.filtered);        %AWGN
-RX.z                = RX.data.channel - TX.data.filtered;      %Calculate the noise signal
-RX.snr              = snr(TX.data.filtered , RX.z);            %Sanity check on snr
+RX.data.channel     = step(RX.H_awgn,TX.data.filteredPad);     %AWGN
+RX.z                = RX.data.channel - TX.data.filteredPad;   %Calculate the noise signal
+RX.snr              = snr(TX.data.filteredPad, RX.z);          %Sanity check on snr
 RX.data.RRCFiltered = step(RX.rctFilt,RX.data.channel);        %RRC
+RX.data.RRCFiltered = RX.data.RRCFiltered (...
+    TX.RRC.Nsym/2+1:end-TX.RRC.Nsym/2);
 RX.data.demod       = step(RX.H_psk_demod,RX.data.RRCFiltered);%Demodulate
 %OTA BER
 %Channel Decoding
 %Coded BER
 
 %% Results
-%Throughput = code rate * (bits/sym) * (sym/sample) * (samples/second) 
+%Throughput = code rate * (bits/sym) * (sym/sample) * (samples/second)
 Results.throughput = 1 * 1 * (1/TX.RRC.sampsPerSym) * TX.parameters.Fs; %in bps
 Results.BW = obw(TX.data.filtered,TX.parameters.Fs);
 Results.spectralEff = Results.throughput / Results.BW %in bps/HZ
