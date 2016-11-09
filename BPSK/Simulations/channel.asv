@@ -18,6 +18,10 @@ classdef channel
         function output = transmit_over_channel(obj, snr, input,parameters)
             obj.H_chan.SNR = snr;  %update snr
             output = step(obj.H_chan, input);
+            if parameters.plots
+               figure(2)
+               plot(parameters.timeVectorUp,real(output));
+            end
         end
         
         %RX.z   = RX.data.channel - TX.data.filteredPad;   %Calculate the noise signal

@@ -25,7 +25,9 @@ classdef receiver
             filteredWindowed = filteredPadded(...
                 obj.H_RRC.FilterSpanInSymbols/2+1:...
                 end-obj.H_RRC.FilterSpanInSymbols/2);
-            output = step(obj.H_pskDeMod,filteredWindowed);%Demodulate
+            outputpad = step(obj.H_pskDeMod,filteredPadded);%Demodulate
+            output    = outputpad(obj.H_RRC.FilterSpanInSymbols + 1 :...
+                end-obj.H_RRC.FilterSpanInSymbols);
         end
     end
     
