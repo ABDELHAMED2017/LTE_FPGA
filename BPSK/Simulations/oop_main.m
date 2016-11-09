@@ -29,6 +29,7 @@ toc;
 %% Results
 %Throughput = code rate * (bits/sym) * (sym/sample) * (samples/second)
 Results.throughput_perfect = 1 * 1 * (1/8) * sim.Fs; %in bps
+Results.throughput_actual = (1-Results.BER) * Results.throughput_perfect;
 
-semilogy(sim.snr_array,Results.BER);
-grid on
+semilogy(sim.snr_array,Results.BER,'-o');
+grid on;

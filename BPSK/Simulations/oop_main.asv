@@ -20,7 +20,8 @@ for snr = sim.snr_array
         error_count(i) = sum(abs(Demodulated-uncodedBits)); %number of errors for each trials
     end
     Results.BER(j) = sum(error_count)/(sim.bits*sim.ntrials); %total errors / total bits
-    
+    str = sprintf('%0.1f %% through',100*j/sim.length);
+    disp(str)
     j = j + 1; %iterate index
 end
 toc; 
@@ -28,6 +29,8 @@ toc;
 %% Results
 %Throughput = code rate * (bits/sym) * (sym/sample) * (samples/second)
 Results.throughput_perfect = 1 * 1 * (1/8) * sim.Fs; %in bps
-
-semilogy(sim.snr_array,Results.BER);
+Results.throughput_actual = 
+semilogy(sim.snr_array,Results.BER,'-o');
 grid on
+
+REsults

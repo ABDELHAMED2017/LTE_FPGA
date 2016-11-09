@@ -16,16 +16,13 @@ classdef transmitter
         function obj = transmitter(M)
             if nargin == 0
                 disp ' nargin 0'
-                obj.M = 4          %use default of  QPSK
+                obj.M = 2         %use default of  BPSK
             end
-            if (gpuDeviceCount)
-                disp 'GPU Found'
-            else
-                disp 'No GPU Found'
-            end
-            
             obj.M = M;
+            %if (gpuDeviceCount)
+            
             obj.H_pskMod = comm.PSKModulator('ModulationOrder',obj.M,'PhaseOffset',pi);
+            
             obj.H_RRC = comm.RaisedCosineTransmitFilter(...
                 'Shape',                  'Normal', ...
                 'RolloffFactor',          obj.RRC.beta, ...

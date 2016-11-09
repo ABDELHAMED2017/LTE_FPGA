@@ -8,12 +8,15 @@ classdef channel
     
     methods
         function obj = channel
-            %should pass the type and then set it up properly
-            %right now, just assume it'll be AWGN.
+            %if (gpuDeviceCount)
+            
             obj.H_chan = comm.AWGNChannel(...    %Setup AWGN channel
                 'NoiseMethod','Signal to noise ratio (SNR)',...
                 'SNR',10,...   %Default SNR
                 'SignalPower',1);
+            
+            %should pass the type and then set it up properly
+            %right now, just assume it'll be AWGN.
         end
         function output = transmit_over_channel(obj, snr, input,parameters)
             obj.H_chan.SNR = snr;  %update snr
@@ -22,6 +25,6 @@ classdef channel
         
         %RX.z   = RX.data.channel - TX.data.filteredPad;   %Calculate the noise signal
         %RX.snr = snr(TX.data.filteredPad, RX.z);          %Sanity check on snr
-    end    
+    end
 end
 

@@ -10,6 +10,8 @@ classdef receiver
     methods
         function obj = receiver(TX) %Pass the transmitter to make a MF
             obj.M = TX.H_pskMod.ModulationOrder;
+            %if (gpuDeviceCount)
+            
             obj.H_pskDeMod = comm.PSKDemodulator ('ModulationOrder',obj.M,...
                 'PhaseOffset',pi,...
                 'BitOutput',true);
@@ -30,6 +32,5 @@ classdef receiver
                 end-obj.H_RRC.FilterSpanInSymbols);
         end
     end
-    
 end
 
