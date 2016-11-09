@@ -45,10 +45,10 @@ classdef transmitter
                 obj.RRC.Nsym/2*obj.RRC.sampsPerSymb);
             if plots
                 figure(2)
-                plot(paramters.timeVector,real(out));
+                plot(parameters.timeVector,real(out));
                 xlabel('time (s)'); ylabel('Amplitude');
                 grid on; hold on;
-                stem(paramters.timeVectorB,real(modulated));
+                stem(parameters.timeVectorB,real(modulated),'k');
             end
         end
     end

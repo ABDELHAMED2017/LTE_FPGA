@@ -20,7 +20,8 @@ classdef channel
             output = step(obj.H_chan, input);
             if plots
                figure(2)
-               plot(parameters.timeVectorB,real(output));
+               plot(parameters.timeVector,real(output));
+               legend('Pulseshaped Signal','Modulated data','RX Signal');
             end
         end
         
