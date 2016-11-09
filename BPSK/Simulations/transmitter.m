@@ -36,19 +36,19 @@ classdef transmitter
             obj.RRC.b      = coeffs(obj.H_RRC);
             obj.H_RRC.Gain = 1/max(obj.RRC.b.Numerator);
         end
-        function out = broadcast(obj,bitInput,plots,parameters)  %Code, Moudlate, and Pulseshape
+        function out = broadcast(obj,bitInput,parameters)  %Code, Moudlate, and Pulseshape
             codedBits = bitInput;  %Apply an Error Correction Code TO DO
             modulated = step(obj.H_pskMod,codedBits); %Modulate Bits
             pad = [modulated; zeros(obj.RRC.Nsym,1)]; %Padd with zeros at the end
             rrcRaw = step(obj.H_RRC,pad); %Filter padded vector
             out = rrcRaw(obj.RRC.Nsym/2*obj.RRC.sampsPerSymb+1:end-...
                 obj.RRC.Nsym/2*obj.RRC.sampsPerSymb);
-            if plots
+            if parameters.plots
                 figure(2)
-                plot(parameters.timeVector,real(out));
+                plot(parameters.timeVectorUp,real(out));
                 xlabel('time (s)'); ylabel('Amplitude');
                 grid on; hold on;
-                stem(parameters.timeVectorB,real(modulated),'k');
+                stem(parameters.timeVectorDown,real(modulated),'k');
             end
         end
     end

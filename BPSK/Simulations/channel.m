@@ -15,12 +15,12 @@ classdef channel
                 'SNR',10,...   %Default SNR
                 'SignalPower',1);
         end
-        function output = transmit_over_channel(obj, snr, input,plots,parameters)
+        function output = transmit_over_channel(obj, snr, input,parameters)
             obj.H_chan.SNR = snr;  %update snr
             output = step(obj.H_chan, input);
-            if plots
+            if parameters.plots
                figure(2)
-               plot(parameters.timeVector,real(output));
+               plot(parameters.timeVectorUp,real(output));
                legend('Pulseshaped Signal','Modulated data','RX Signal');
             end
         end
