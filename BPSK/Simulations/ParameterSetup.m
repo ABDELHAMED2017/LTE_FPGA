@@ -24,6 +24,8 @@ classdef ParameterSetup
             if plots
                 obj.ntrials = 1
                 obj.bits = 50;
+                obj.snr_min = 0; 
+                obj.snr_max = 0;
             end
             obj.ts =  1 / obj.Fs; %Sample period
             obj.sampleVector = 0:(obj.bits*obj.sampsPerSymb-1); %Sample vector for plots
