@@ -6,16 +6,18 @@ close all;
 sim  = ParameterSetup(0); %Object to setup everything
 TXA  = transmitter(2);    %Create object for TX
 AWGN = channel;           %Create object for channel
+W3 = WARP(1);             %Create object for WARP board
 RXA  = receiver(TXA);     %Create object for RX
 
 %% Simulation
 tic;  %Start Clock
 j = 1;
 for snr = sim.snr_array
-    parfor i = 1: sim.ntrials
+    for i = 1: sim.ntrials
         uncodedBits = randi([0,1], sim.bits, 1);   %Create Random Data
         toSend      = broadcast(TXA,uncodedBits,sim);      %Do signal processing to prepare to send
-        RawRecieved = transmit_over_channel(AWGN, snr, toSend, sim);
+        %RawRecieved = transmit_over_channel(AWGN, snr, toSend, sim);
+        RawRecieved = broadcast(W3,toSend);
         Demodulated = receive(RXA,RawRecieved);
         error_count(i) = sum(abs(Demodulated-uncodedBits)); %number of errors for each trials
     end
@@ -30,6 +32,6 @@ toc;
 %Throughput = code rate * (bits/sym) * (sym/sample) * (samples/second)
 Results.throughput_perfect = 1 * 1 * (1/8) * sim.Fs; %in bps
 Results.throughput_actual = (1-Results.BER) * Results.throughput_perfect;
-
+figure()
 semilogy(sim.snr_array,Results.BER,'-o');
 grid on;
