@@ -6,7 +6,7 @@ classdef transmitter
         RRC = struct(...       %Root Raised Cosine Filter
             'sampsPerSymb', 8,... %Upsampling factor
             'beta', 0.2,...       %Rolloff factor
-            'Nsym', 2)            %Filter span in symbol dutrations
+            'Nsym', 16)            %Filter span in symbol dutrations
         M                      %Modulation Order
         H_pskMod               %Modulator Object
         H_RRC                  %RRC filtering object
@@ -21,7 +21,7 @@ classdef transmitter
             obj.M = M;
             %if (gpuDeviceCount)
             
-            obj.H_pskMod = comm.PSKModulator('ModulationOrder',obj.M,'PhaseOffset',pi);
+            obj.H_pskMod = comm.DPSKModulator('ModulationOrder',obj.M); %,'PhaseOffset',pi);
             
             obj.H_RRC = comm.RaisedCosineTransmitFilter(...
                 'Shape',                  'Normal', ...

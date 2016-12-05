@@ -7,13 +7,14 @@ classdef WARP
         node_tx
         node_rx
         rx_length
+        tx_length
         ifc_ids
         eth_trig
     end
     
     methods
         function obj = WARP(N)
-            USE_AGC                 = true;        % Use the AGC if running on WARP hardware
+            USE_AGC                 = false;        % Use the AGC if running on WARP hardware
             obj.nodes = wl_initNodes(N);
             obj.node_tx = obj.nodes(1);
             obj.node_rx = obj.nodes(1);
@@ -48,7 +49,7 @@ classdef WARP
             % Set the transmission / receptions lengths (in samples)
             %     See WARPLab user guide for maximum length supported by WARP hardware
             %     versions and different WARPLab versions.
-            tx_length        = 2^17;
+            tx_length        = 2^12;
             obj.rx_length    = tx_length;
             rssi_length  = obj.rx_length / (ts_rssi / ts_rx);
             
@@ -62,6 +63,11 @@ classdef WARP
             wl_basebandCmd(obj.nodes, 'rx_length', obj.rx_length);
         end
         function rx_iq = broadcast(obj,tx_data)
+            obj.tx_length = length(tx_data)+100;   %This would be more efficient elsewhere
+            obj.rx_length    = obj.tx_length;
+            wl_basebandCmd(obj.nodes, 'tx_length', obj.tx_length);
+            wl_basebandCmd(obj.nodes, 'rx_length', obj.rx_length);
+            
             wl_basebandCmd(obj.node_tx, [obj.ifc_ids.RF_A], 'write_IQ', tx_data);
             wl_interfaceCmd(obj.node_tx, obj.ifc_ids.RF_A, 'tx_en');
             wl_interfaceCmd(obj.node_rx, obj.ifc_ids.RF_B, 'rx_en');
@@ -74,6 +80,9 @@ classdef WARP
             wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_B, 'tx_rx_dis');
             wl_basebandCmd(obj.nodes, obj.ifc_ids.RF_A, 'tx_rx_buff_dis');
             wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_A, 'tx_rx_dis');
+            
+            D = finddelay(tx_data,rx_iq);
+            rx_iq = rx_iq(D+1:D+length(tx_data));
         end
     end
     

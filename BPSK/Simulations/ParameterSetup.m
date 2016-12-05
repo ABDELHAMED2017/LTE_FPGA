@@ -3,17 +3,17 @@ classdef ParameterSetup
     %   Detailed explanation goes here
     
     properties
-        bits = 10000    %Bits per trial
-        ntrials = 100 %Montecarlo Trials
+        bits = 100    %Bits per trialS
+        ntrials = 1 %Montecarlo Trials
         Fs = 40*10^6   %40 MHz Sampling rate
         ts             %sample period
-        plots = 0      %Plots
+        plots = 0     %Plots
         sampleVector   %Vector for sample index
         timeVectorUp   %Vector for upsampled time index
         timeVectorDown %Vector for downsampled (symbol-wise) time index
         sampsPerSymb = 8 %upsampling factor of RRC filer
-        snr_min = -6
-        snr_max = 10
+        snr_min = 5
+        snr_max = 5
         snr_step = 1
         snr_array 
         length

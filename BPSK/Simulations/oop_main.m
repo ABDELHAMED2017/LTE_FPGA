@@ -9,22 +9,31 @@ AWGN = channel;           %Create object for channel
 W3 = WARP(1);             %Create object for WARP board
 RXA  = receiver(TXA);     %Create object for RX
 
+
+hConEnc = comm.ConvolutionalEncoder;  
+hDec = comm.ViterbiDecoder('InputFormat','Hard');
+
 %% Simulation
 tic;  %Start Clock
-j = 1;
+index = 1;
 for snr = sim.snr_array
     for i = 1: sim.ntrials
-        uncodedBits = randi([0,1], sim.bits, 1);   %Create Random Data
-        toSend      = broadcast(TXA,uncodedBits,sim);      %Do signal processing to prepare to send
+        uncodedBits = randi([0,1], sim.bits, 1);
+        flushedBits =[uncodedBits; zeros(50,1)];
+        codedBits = step(hConEnc,flushedBits);
+        toSend      = broadcast(TXA,codedBits,sim);      %Do signal processing to prepare to send
+        toSend = toSend  / 3;
         %RawRecieved = transmit_over_channel(AWGN, snr, toSend, sim);
         RawRecieved = broadcast(W3,toSend);
-        Demodulated = receive(RXA,RawRecieved);
-        error_count(i) = sum(abs(Demodulated-uncodedBits)); %number of errors for each trials
+        Demodulated = receive(RXA,RawRecieved);       
+        Decoded = step(hDec, Demodulated);
+        Decoded = Decoded(35:35 + length(uncodedBits)-1);
+        error_count(i) = sum(abs(Decoded-uncodedBits)); %number of errors for each trials
     end
-    Results.BER(j) = sum(error_count)/(sim.bits*sim.ntrials); %total errors / total bits
-    str = sprintf('%0.1f %% through',100*j/sim.length);
+    Results.BER(index) = sum(error_count)/(sim.bits*sim.ntrials); %total errors / total bits
+    str = sprintf('%0.1f %% through',100*index/sim.length);
     disp(str)
-    j = j + 1; %iterate index
+    index = index + 1; %iterate index
 end
 toc; 
 
