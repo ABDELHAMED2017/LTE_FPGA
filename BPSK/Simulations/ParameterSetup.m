@@ -3,8 +3,8 @@ classdef ParameterSetup
     %   Detailed explanation goes here
     
     properties
-        bits = 100    %Bits per trialS
-        ntrials = 1 %Montecarlo Trials
+        bits = 100;    %Bits per trialS
+        ntrials = 1000 %Montecarlo Trials
         Fs = 40*10^6   %40 MHz Sampling rate
         ts             %sample period
         plots = 0     %Plots

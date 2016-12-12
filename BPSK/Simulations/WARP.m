@@ -24,11 +24,11 @@ classdef WARP
             trig_out_ids = wl_getTriggerOutputIDs(obj.nodes(1));
             wl_triggerManagerCmd(obj.nodes, 'output_config_input_selection', [trig_out_ids.BASEBAND], [trig_in_ids.ETH_A]);
             obj.ifc_ids = wl_getInterfaceIDs(obj.nodes(1));
-            wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'channel', 2.4, 6);
+            wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'channel', 2.4, 1);
             %wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'rx_lpf_corn_freq', 0);
             wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'rx_gain_mode', 'manual');
-            wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'rx_gains', 2, 12);
-            wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'tx_gains', 2, 40);
+            wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'rx_gains', 2, 20);
+            wl_interfaceCmd(obj.nodes, obj.ifc_ids.RF_ALL, 'tx_gains', 1, 8);
             
             if(USE_AGC)
                 wl_interfaceCmd(obj.node_rx, obj.ifc_ids.RF_ALL, 'rx_gain_mode', 'automatic');

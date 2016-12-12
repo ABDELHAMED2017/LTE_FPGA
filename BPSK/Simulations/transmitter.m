@@ -5,7 +5,7 @@ classdef transmitter
     properties
         RRC = struct(...       %Root Raised Cosine Filter
             'sampsPerSymb', 8,... %Upsampling factor
-            'beta', 0.2,...       %Rolloff factor
+            'beta', 0.0,...       %Rolloff factor
             'Nsym', 16)            %Filter span in symbol dutrations
         M                      %Modulation Order
         H_pskMod               %Modulator Object
