@@ -2,15 +2,14 @@ classdef Parameters < handle
    %Parameters Set up all expierment parameters.
    
    properties
-      nbits     %Bits per trialS
+      nbits    %Bits per trialS
       ntrials  %Montecarlo Trials
       Fs       %Sampling rate
-      ts             %sample period
-      plots     %Plots
+      ts       %sample period
+      plots    %Plots
       sampleVector   %Vector for sample index
       timeVectorUp   %Vector for upsampled time index
       timeVectorDown %Vector for downsampled (symbol-wise) time index
-      sampsPerSymb = 8 %upsampling factor of RRC filer
       snr_min = 5
       snr_max = 5
       snr_step = 1
