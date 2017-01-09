@@ -13,7 +13,7 @@ Params = Parameters(0,'filename');
 %% Simulation
 
 %Data
-Data
+Data = DataSource(Params); %Create data object. 
 
 %TX
 

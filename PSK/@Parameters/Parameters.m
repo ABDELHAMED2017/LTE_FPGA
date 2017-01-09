@@ -10,11 +10,7 @@ classdef Parameters < handle
       sampleVector   %Vector for sample index
       timeVectorUp   %Vector for upsampled time index
       timeVectorDown %Vector for downsampled (symbol-wise) time index
-      snr_min = 5
-      snr_max = 5
-      snr_step = 1
-      snr_array
-      length
+      SNR
       RRC
       ECC
       fileID
@@ -45,10 +41,10 @@ classdef Parameters < handle
          end
          
          if plots
-            obj.ntrials = 1; %Only need 1 trial to avoid TONS of plots
-            obj.bits = 50;   %Few number of bits for easier figs
-            obj.snr_min = 0; %One SNR step
-            obj.snr_max = 0;
+            obj.ntrials = 1;  %Only need 1 trial to avoid TONS of plots
+            obj.nbits = 50;   %Few number of bits for easier figs
+            obj.SNR.min = 0;  %One SNR step
+            obj.SNR.max = 0;
          end
       end
    end

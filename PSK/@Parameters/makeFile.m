@@ -72,8 +72,8 @@ obj.ts =  1 / obj.Fs; %Sample period
 obj.sampleVector = 0:(obj.nbits*obj.sampsPerSymb-1); %Sample vector for plots
 obj.timeVectorUp   = obj.ts*obj.sampleVector;  %Time vectors for plots
 obj.timeVectorDown  = downsample(obj.timeVectorUp, obj.sampsPerSymb);
-obj.snr_array = obj.snr_min:obj.snr_step:obj.snr_max;
-obj.length = length(obj.snr_array);
+obj.SNR.array = obj.SNR.min:obj.SNR.step:obj.SNR.max;
+obj.SNR.arrayLength = length(obj.SNR.array);
 
 %Save file for future runs
 cd ParameterFiles
