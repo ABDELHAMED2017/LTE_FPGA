@@ -67,11 +67,30 @@ if isempty(obj.RRC.factor)
    disp(['      Using default: ' num2str(obj.RRC.factor)]);
 end
 
+obj.SNR.min = input('    SNR min?');
+if isempty(obj.SNR.min)
+   obj.SNR.min  = 0;
+   disp(['      Using default: ' num2str(obj.SNR.min)]);
+end
+
+obj.SNR.step = input('    SNR step size?');
+if isempty(obj.SNR.step)
+   obj.SNR.step  = 1;
+   disp(['      Using default: ' num2str(obj.SNR.step)]);
+end
+
+obj.SNR.max = input('    SNR max?');
+if isempty(obj.SNR.max)
+   obj.SNR.max  = 10;
+   disp(['      Using default: ' num2str(obj.SNR.max)]);
+end
+
+
 %Do a few calculations to get rest of important stuff
 obj.ts =  1 / obj.Fs; %Sample period
-obj.sampleVector = 0:(obj.nbits*obj.sampsPerSymb-1); %Sample vector for plots
+obj.sampleVector = 0:(obj.nbits*obj.RRC.factor-1); %Sample vector for plots
 obj.timeVectorUp   = obj.ts*obj.sampleVector;  %Time vectors for plots
-obj.timeVectorDown  = downsample(obj.timeVectorUp, obj.sampsPerSymb);
+obj.timeVectorDown  = downsample(obj.timeVectorUp, obj.RRC.factor);
 obj.SNR.array = obj.SNR.min:obj.SNR.step:obj.SNR.max;
 obj.SNR.arrayLength = length(obj.SNR.array);
 

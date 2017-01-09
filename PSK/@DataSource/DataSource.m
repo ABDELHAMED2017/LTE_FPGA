@@ -3,21 +3,17 @@ classdef DataSource
    %for basebad processing
    
    properties
-      length
+      bitsVector
    end
    
    methods
       function obj = DataSource(Params) %Constructor 
-         %Maybe, I should define with paramters as a superclass. Then I
-         %think I can access those methods and stuff.
          
-         
-         obj.length = Params.nBits; %Copy number of bits into object 
-         obj.SNR    = Params.SNR;   %Copy SNR struct into this object
          %Colums = singal @ snr
          %Rows   = new snr step
-         %Page   = new montecarlo trial
-         obj.bits = randi([0,1],obj.nbits,obj.SNR.,3])  
+         %Page = new montecarlo trial
+         obj.bitsVector = randi([0,1], ...
+            [Params.nbits,Params.SNR.arrayLength,Params.ntrials]) ;
       end
    end
    

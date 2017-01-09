@@ -8,7 +8,7 @@ function main()
 clear;clc;close all;
 
 %Create paramter object for the simulation
-Params = Parameters(0,'filename');
+Params = Parameters(0);
 
 %% Simulation
 
